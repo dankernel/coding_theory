@@ -137,20 +137,12 @@ int print_line(char *line[])
   return 0;
 }
 
-int cp_valid(char *str[], char *keyword[])
+int cp_valid(char *str[], char *keyword[], char *valid[])
 {
   int i = 0, j = 0;
-  char *valid[ARRAY_SIZE] = {'\0', };
 
   if (str == NULL)
     return -1;
-
-  // Allocation valid array
-  i = 0;
-  while (i < ARRAY_SIZE) {
-    valid[i] = malloc(sizeof(char *) * ARRAY_SIZE);
-    memset(valid[i++], '\0', ARRAY_SIZE);
-  }
 
   // Copy valid keyword to tmp[][]
   i = 0, j = 0;
@@ -210,8 +202,11 @@ int read_line(FILE *fp)
   int i = 0;
   char buff[BUFF_SIZE] = {'\0', };
 
+  char *keyword[ARRAY_SIZE] = {"int", "char", "long", "double", "\0"};
   char token[] = "\t ()<>[]{},.!@#$%^&*_+-=;\'\"\n";
+
   char *result[ARRAY_SIZE] = {'\0', };
+  char *valid[ARRAY_SIZE] = {'\0', };
 
   // Exception
   if (fp == NULL)
@@ -219,19 +214,24 @@ int read_line(FILE *fp)
 
   // Allocation array
   i = 0;
-  while (i < ARRAY_SIZE)
-    result[i++] = malloc(sizeof(char *) * ARRAY_SIZE);
+  while (i < ARRAY_SIZE) {
+    result[i] = malloc(sizeof(char *) * ARRAY_SIZE);
+    valid[i] = malloc(sizeof(char *) * ARRAY_SIZE);
+    i++;
+  }
 
   while (!feof(fp)) {
-    // Initialization
-    memset(buff, '\0', BUFF_SIZE);
 
-    // Initialization result array
+    // Initialization
     i = 0;
-    while (i < ARRAY_SIZE)
-      memset(result[i++], '\0', BUFF_SIZE);
+    memset(buff, '\0', BUFF_SIZE);
+    while (i < ARRAY_SIZE) {
+      memset(result[i], '\0', BUFF_SIZE);
+      memset(valid[i], '\0', BUFF_SIZE);
+      i++;
+    }
  
-    // Read one line
+    // Read one line to buff
     fscanf(fp, "%[^\n]", buff);
     fgetc(fp);
 
@@ -239,15 +239,12 @@ int read_line(FILE *fp)
     if (valid_char(buff) != strlen(buff))
       tokenization(buff, token, result);
 
-    char *keyword[ARRAY_SIZE] = {"int", "char", "long", "double", "\0"};
-
-    cp_valid(result, keyword);
+    cp_valid(result, keyword, valid);
   }
 
   i = 0;
   while (i < ARRAY_SIZE)
     free(result[i++]);
-
 
   return 0;
 }
