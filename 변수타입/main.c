@@ -225,7 +225,7 @@ int read_line(FILE *fp)
   char *valid[ARRAY_SIZE] = {'\0', };
 
   char *keyword[ARRAY_SIZE] = {"int", "char", "long", "double", "\0"};
-  char token[] = "\t ()<>[]{},.!@#$%^&*_+-=;\'\"\n";
+  char token[] = "\t ()<>[]{},.!@#$%^&*+-=;\'\"\n";
 
   // Allocation array
   i = 0;

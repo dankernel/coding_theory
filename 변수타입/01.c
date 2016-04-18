@@ -1,4 +1,4 @@
-int arraySize = 0;
+int array_size = 0;
 
 char add1(char c)
 {
