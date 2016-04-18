@@ -40,12 +40,16 @@ int is_token(const char c, const char *tok)
   return 0;
 }
 
+/*
+ * Tokenizing origin data
+ * @str : origin string
+ * @tok : tokens
+ * @result : result
+ */
 int tokenization(const char *str, const char *tok, char *result[])
 {
-  int ret = 0;
+  int ret = 0,  str_len = 0, tok_len = 0, i = 0, j = 0, cp_index = 0;
   const char *start = NULL, *end = NULL;
-  int str_len = 0, tok_len = 0, i = 0, j = 0;
-  int cp_index = 0;
 
   if (str == NULL || tok == NULL || result == NULL)
     return -1;
@@ -137,11 +141,14 @@ int print_line(char *line[])
   return 0;
 }
 
-int cp_valid(char *str[], char *keyword[], char *valid[])
+/*
+ * Copy onliy valid string
+ */
+int cp_valid(char *valid[], char *str[])
 {
   int i = 0, j = 0;
 
-  if (str == NULL)
+  if (valid == NULL || str == NULL)
     return -1;
 
   // Copy valid keyword to tmp[][]
@@ -153,64 +160,72 @@ int cp_valid(char *str[], char *keyword[], char *valid[])
     i++;
   }
 
+  return 0;
+}
+
+/*
+ * Print variable and function string
+ * @valid : valid string
+ * @keyword : data typa
+ * @str : origin string
+ */
+int print_variable(char *valid[], char *keyword[], char *str[], int depth)
+{
   // Function
   if (is_keyword(valid[0], keyword) && valid[2][0] == '(') {
     printf("function : %s : ", valid[0]);
     print_line(str);
   }
 
-  if (is_keyword(valid[0], keyword) && valid[2][0] == '=') {
-    printf("variable : %s : ", valid[0]);
+  // Variable
+  if (is_keyword(valid[0], keyword) && (valid[2][0] == '=' || valid[2][0] == ';')) {
+
+    if (depth == 0) 
+      printf("local variable : %s : ", valid[0]);
+    else if (0 < depth) 
+      printf("global variable : %s : ", valid[0]);
+
     print_line(str);
   }
 
   return 0;
 }
 
-int print_keyword(char *arr[], char *keyword[])
+int check_depth(char *str[])
 {
-  int i = 0, j = 0;
-  if (arr == NULL || keyword == NULL)
+  int ret = 0, i = 0;
+
+  if (str == NULL)
     return -1;
 
-  // Print All
-  i = 0, j = 0;
-  printf("\n");
-  while (arr[i][0] != '\0' && i < ARRAY_SIZE) {
-    j = 0;
-    
-    printf("= \"%10s\" \n", arr[i]);
-    while (keyword[j][0] != '\0' && j < ARRAY_SIZE) {
-
-      if (arr[i][0] != ' ' && !strcmp(arr[i], keyword[j])) {
-        printf("> %10s\n", "keyword");
-        break;
-      } else {
-        /* printf("_ [%d]%s\n", i, arr[i]); */
-      }
-
-      j++;
-    }
+  // Count depth
+  i = 0;
+  while (str[i][0] != '\0' && i < ARRAY_SIZE) {
+    if (str[i][0] == '{')
+      ret++;
+    if (str[i][0] == '}')
+      ret--;
 
     i++;
   }
-  return 0;
+
+  return ret;
 }
 
 int read_line(FILE *fp)
 {
-  int i = 0;
-  char buff[BUFF_SIZE] = {'\0', };
-
-  char *keyword[ARRAY_SIZE] = {"int", "char", "long", "double", "\0"};
-  char token[] = "\t ()<>[]{},.!@#$%^&*_+-=;\'\"\n";
-
-  char *result[ARRAY_SIZE] = {'\0', };
-  char *valid[ARRAY_SIZE] = {'\0', };
-
   // Exception
   if (fp == NULL)
     return -1;
+
+  int i = 0, depth = 0;
+
+  char buff[BUFF_SIZE] = {'\0', };
+  char *result[ARRAY_SIZE] = {'\0', };
+  char *valid[ARRAY_SIZE] = {'\0', };
+
+  char *keyword[ARRAY_SIZE] = {"int", "char", "long", "double", "\0"};
+  char token[] = "\t ()<>[]{},.!@#$%^&*_+-=;\'\"\n";
 
   // Allocation array
   i = 0;
@@ -220,14 +235,15 @@ int read_line(FILE *fp)
     i++;
   }
 
+  // Read file
   while (!feof(fp)) {
 
     // Initialization
     i = 0;
     memset(buff, '\0', BUFF_SIZE);
     while (i < ARRAY_SIZE) {
-      memset(result[i], '\0', BUFF_SIZE);
-      memset(valid[i], '\0', BUFF_SIZE);
+      memset(result[i], '\0', ARRAY_SIZE);
+      memset(valid[i], '\0', ARRAY_SIZE);
       i++;
     }
  
@@ -239,12 +255,24 @@ int read_line(FILE *fp)
     if (valid_char(buff) != strlen(buff))
       tokenization(buff, token, result);
 
-    cp_valid(result, keyword, valid);
+    // Copy only valid string
+    cp_valid(valid, result);
+
+    // Check depth
+    depth += check_depth(valid);
+
+    // Print variable string
+    print_variable(valid, keyword, result, depth);
+
   }
 
+  // Free
   i = 0;
-  while (i < ARRAY_SIZE)
-    free(result[i++]);
+  while (i < ARRAY_SIZE) {
+    free(result[i]);
+    free(valid[i]);
+    i++;
+  }
 
   return 0;
 }
