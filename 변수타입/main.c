@@ -70,18 +70,15 @@ int tokenization(const char *str, const char *tok, char *result[])
 
         if (end == start) {
           strncpy(result[cp_index], end, 1);
-          strcat(result[cp_index], "\0");
-          printf("0= %s\n", result[cp_index++]);
+          strcat(result[cp_index++], "\0");
         } else { 
 
           // Copy string
           strncpy(result[cp_index], start, end - start);
-          strcat(result[cp_index], "\0");
-          printf("1= %s\n", result[cp_index++]);
+          strcat(result[cp_index++], "\0");
 
           strncpy(result[cp_index], end, 1);
-          strcat(result[cp_index], "\0");
-          printf("2= %s\n", result[cp_index++]);
+          strcat(result[cp_index++], "\0");
         }
 
         // Next
@@ -133,7 +130,7 @@ int print_line(char *line[])
 {
   int i = 0;
   while (line[i][0] != '\0' && i < ARRAY_SIZE)
-    printf("%s ", line[i++]);
+    printf("%s", line[i++]);
 
   printf("\n");
 
