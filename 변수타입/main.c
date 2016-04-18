@@ -53,12 +53,14 @@ int tokenization(const char *str, const char *tok, char *result[])
   str_len = strlen(str);
   tok_len = strlen(tok);
 
+  // Remove whitespace
   i = 0;
   while (str[i] == ' ' || str[i] == '\t') {
     i++;
   }
 
-  start = str;
+  // tokenizing
+  start = str + i;
   for (; i < str_len; i++) {
     for (j = 0; j < tok_len; j++) {
 
@@ -72,8 +74,6 @@ int tokenization(const char *str, const char *tok, char *result[])
           strncpy(result[cp_index], end, 1);
           strcat(result[cp_index++], "\0");
         } else { 
-
-          // Copy string
           strncpy(result[cp_index], start, end - start);
           strcat(result[cp_index++], "\0");
 
@@ -109,7 +109,7 @@ int print_valid(char *result[])
   return 0;
 }
 
-int is_keyword(const char *str, const char *keyword[])
+int is_keyword(const char *str, char *keyword[])
 {
   int i = 0;
   if (str == NULL || keyword == NULL)
@@ -137,12 +137,12 @@ int print_line(char *line[])
   return 0;
 }
 
-int cp_valid(char *result[], const char *keyword[])
+int cp_valid(char *str[], char *keyword[])
 {
   int i = 0, j = 0;
   char *valid[ARRAY_SIZE] = {'\0', };
 
-  if (result == NULL)
+  if (str == NULL)
     return -1;
 
   // Allocation valid array
@@ -154,33 +154,23 @@ int cp_valid(char *result[], const char *keyword[])
 
   // Copy valid keyword to tmp[][]
   i = 0, j = 0;
-  printf("\n");
-  while (result[i][0] != '\0' && i < ARRAY_SIZE) {
-    if (result[i][0] != ' ') {
-      strcpy(valid[j++], result[i]);
+  while (str[i][0] != '\0' && i < ARRAY_SIZE) {
+    if (str[i][0] != ' ' && str[i][0] != '\t') {
+      strcpy(valid[j++], str[i]);
     }
     i++;
   }
 
   // Function
   if (is_keyword(valid[0], keyword) && valid[2][0] == '(') {
-    printf("function\n");
-    print_line(result);
+    printf("function : %s : ", valid[0]);
+    print_line(str);
   }
 
   if (is_keyword(valid[0], keyword) && valid[2][0] == '=') {
-    printf("variable\n");
-    print_line(result);
+    printf("variable : %s : ", valid[0]);
+    print_line(str);
   }
-  /*
-  j = 0;
-  while (tmp[j][0] != '\0' && i < ARRAY_SIZE) {
-    printf("%s\n", tmp[j]);
-    if (is_keyword(tmp[j], keyword))
-      printf("keyword!!!\n");
-    j++;
-  }
-  */
 
   return 0;
 }
@@ -251,9 +241,7 @@ int read_line(FILE *fp)
 
     char *keyword[ARRAY_SIZE] = {"int", "char", "long", "double", "\0"};
 
-    // TODO ...
-    print_line(result);
-    /* cp_valid(result, keyword); */
+    cp_valid(result, keyword);
   }
 
   i = 0;
